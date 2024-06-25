@@ -1,3 +1,5 @@
+import json
+import time
 import streamlit as st
 from openai import OpenAI
 
@@ -30,6 +32,18 @@ if prompt := st.chat_input("What is up?"):
 
     with st.chat_message("user"):
         st.markdown(prompt)
+
+    messages = [
+                {"role": "system", "content": dataset},
+                {"role": "system", "content": 'Текущий текст: ' + st.session_state["text"]},
+                *[
+                    {"role": message["role"], "content": message["content"]} for message in st.session_state.messages
+                ]
+    ]
+    # save messages to json file with timestamp in the file name
+    with open(f"logs/messages_{int(time.time())}.json", "w") as f:
+        json.dump(messages, f, ensure_ascii=False, indent=2)
+
        
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
@@ -37,13 +51,7 @@ if prompt := st.chat_input("What is up?"):
         stream = client.chat.completions.create(
             model=st.session_state["openai_model"],
             temperature=0.5,
-            messages=[
-                {"role": "system", "content": dataset},
-                {"role": "system", "content": 'Текущий текст: ' + st.session_state["text"]},
-                *[
-                    {"role": message["role"], "content": message["content"]} for message in st.session_state.messages
-                ]
-            ],
+            messages=messages,
             stream=True,
         )
         response = st.write_stream(stream)
