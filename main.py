@@ -1,6 +1,6 @@
 import streamlit as st
 from openai import OpenAI
-import docx
+import docx 
 
 def read_docx(file_path):
     doc = docx.Document(file_path)
@@ -26,7 +26,6 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-
 # Read system dataset
 with open("dataset.txt", "r") as file:
     dataset = file.read()
@@ -36,6 +35,7 @@ tech_specs = read_docx("tech-specs.docx")
 
 # Combine dataset and tech specs
 combined_content = dataset + "\n" + tech_specs
+
 
 # Accept user input
 if prompt := st.chat_input("What is up?"):
