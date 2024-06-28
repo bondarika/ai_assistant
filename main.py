@@ -59,7 +59,6 @@ tech_specs = read_docx("tech-specs.docx")
 # Combine dataset and tech specs
 combined_content = dataset + "\n" + tech_specs
 
-
 # Accept user input
 if prompt := st.chat_input("What is up?"):
     # Add user message to chat history
@@ -75,10 +74,10 @@ if prompt := st.chat_input("What is up?"):
                     {"role": message["role"], "content": message["content"]} for message in st.session_state.messages
                 ]
     ]
+
     # save messages to json file with timestamp in the file name
     with open(f"logs/messages_{int(time.time())}.json", "w") as f:
         json.dump(messages, f, ensure_ascii=False, indent=2)
-
        
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
@@ -89,13 +88,11 @@ if prompt := st.chat_input("What is up?"):
             stream=True,
         )
         response = st.write_stream(stream)
+
     st.session_state["text"] = extract_plaintext(response)
     st.session_state.messages.append({"role": "assistant", "content": response}) 
 
-
-
-
-with st.sidebar:
+    with st.sidebar:
         st.header("Document text")
         text = st.text_area(
             label="xdxdlol",
