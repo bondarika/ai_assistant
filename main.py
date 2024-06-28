@@ -2,6 +2,35 @@ import json
 import time
 import streamlit as st
 from openai import OpenAI
+import docx 
+
+def read_docx(file_path):
+    doc = docx.Document(file_path)
+    full_text = []
+    for para in doc.paragraphs:
+        full_text.append(para.text)
+    return '\n'.join(full_text)
+
+def extract_plaintext(input_string):
+    # Найдем начальную позицию маркера "```plaintext"
+    start_marker = "```plaintext"
+    end_marker = "```"
+    
+    start_index = input_string.find(start_marker)
+    if start_index == -1:
+        return ""
+    
+    # Смещаем начальную позицию на длину маркера
+    start_index += len(start_marker)
+    
+    # Найдем конечную позицию маркера "```"
+    end_index = input_string.find(end_marker, start_index)
+    if end_index == -1:
+        return ""
+    
+    # Извлечем текст между маркерами и уберем лишние пробелы
+    extracted_text = input_string[start_index:end_index].strip()
+    return extracted_text
 
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
@@ -20,10 +49,16 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# Read system dataset
+with open("dataset.txt", "r") as file:
+    dataset = file.read()
 
-# read system dataset
-file = open("dataset.txt", "r")
-dataset = file.read()
+# Read tech specs document
+tech_specs = read_docx("tech-specs.docx")
+
+# Combine dataset and tech specs
+combined_content = dataset + "\n" + tech_specs
+
 
 # Accept user input
 if prompt := st.chat_input("What is up?"):
@@ -34,7 +69,7 @@ if prompt := st.chat_input("What is up?"):
         st.markdown(prompt)
 
     messages = [
-                {"role": "system", "content": dataset},
+                {"role": "system", "content": combined_content},
                 {"role": "system", "content": 'Текущий текст: ' + st.session_state["text"]},
                 *[
                     {"role": message["role"], "content": message["content"]} for message in st.session_state.messages
@@ -51,19 +86,16 @@ if prompt := st.chat_input("What is up?"):
         stream = client.chat.completions.create(
             model=st.session_state["openai_model"],
             temperature=0.5,
-            messages=messages,
             stream=True,
         )
         response = st.write_stream(stream)
-
+    st.session_state["text"] = extract_plaintext(response)
     st.session_state.messages.append({"role": "assistant", "content": response}) 
 
-    index = response.find("Текущий текст:")
-    if index != -1:
-        st.session_state["text"] = response[index + 15:]
-        # print(response[index + 15:])
 
-    with st.sidebar:
+
+
+with st.sidebar:
         st.header("Document text")
         text = st.text_area(
             label="xdxdlol",
@@ -72,6 +104,21 @@ if prompt := st.chat_input("What is up?"):
             label_visibility='hidden'
         )
 
+# Cделать обработку ошибки при достижении лимита токенов в минуту 
+# RateLimitError: Error code: 429  поймать!!
+# Как убрать постоянное обновление стейта, чтобы текст не выписывался каждый раз с нуля?
+# Почему лагает левое окно, если его обновить вручную? исправить
+# Забирать только markdown! Внести в код изменения
+# Внести инструкцию обнуления
+
+
+# Передача текста через историю
+# Вывод только изменяемого раздела
+
+
+#ПОЗЖЕ
+# Добавить возмодность пользователю добавлять свой документ?
+# А как будет работать хранение всего документа?
 
 
 
