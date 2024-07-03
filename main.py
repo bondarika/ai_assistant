@@ -1,7 +1,7 @@
 import json
 import time
 import streamlit as st
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 import docx 
 
 def read_docx(file_path):
@@ -81,20 +81,21 @@ if prompt := st.chat_input("What is up?"):
        
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
-        # write error handler RaceLimitError: Error code: 429
+        # TODO: error handler RateLimitError. Error code: 429
         try:
             stream = client.chat.completions.create(
                 model=st.session_state["openai_model"],
-                temperature=0.5,
+                temperature=0.7,
+                messages=messages,
                 stream=True,
             )
-        except Exception:
-            st.write("Error: Please check your OpenAI API key")
-        response = st.write_stream(stream)
+            response = st.write_stream(stream)
+        except RateLimitError as e:
+            st.write("RateLimitError. Error code: 429"+ "\n You assigned rate limit " + str(e.rate_limit) + "\n" + str(e))
 
     st.session_state["text"] = extract_plaintext(response)
     st.session_state.messages.append({"role": "assistant", "content": response}) 
-
+    
     with st.sidebar:
         st.header("Document text")
         text = st.text_area(
@@ -117,7 +118,7 @@ if prompt := st.chat_input("What is up?"):
 
 
 #ПОЗЖЕ
-# Добавить возмодность пользователю добавлять свой документ?
+# Добавить возможность пользователю добавлять свой документ?
 # А как будет работать хранение всего документа?
 
 
