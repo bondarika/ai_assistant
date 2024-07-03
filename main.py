@@ -81,12 +81,15 @@ if prompt := st.chat_input("What is up?"):
        
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
-        print(st.session_state["text"])
-        stream = client.chat.completions.create(
-            model=st.session_state["openai_model"],
-            temperature=0.5,
-            stream=True,
-        )
+        # write error handler RaceLimitError: Error code: 429
+        try:
+            stream = client.chat.completions.create(
+                model=st.session_state["openai_model"],
+                temperature=0.5,
+                stream=True,
+            )
+        except Exception:
+            st.write("Error: Please check your OpenAI API key")
         response = st.write_stream(stream)
 
     st.session_state["text"] = extract_plaintext(response)
