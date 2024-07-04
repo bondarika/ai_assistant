@@ -13,8 +13,8 @@ def read_docx(file_path):
 
 def extract_plaintext(input_string):
     # Найдем начальную позицию маркера "```plaintext"
-    start_marker = "```plaintext"
-    end_marker = "```"
+    start_marker = "Текущий текст:"
+    end_marker = "---"
     
     start_index = input_string.find(start_marker)
     if start_index == -1:
@@ -64,13 +64,14 @@ if prompt := st.chat_input("What is up?"):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    st.session_state.messages = st.session_state.messages[-2:]
+    st.session_state.messages = st.session_state.messages[-3:]
 
     with st.chat_message("user"):
         st.markdown(prompt)
 
     messages = [
                 {"role": "system", "content": combined_content},
+                {"role": "user", "content": st.session_state["document"]},
                 *[
                     {"role": message["role"], "content": message["content"]} for message in st.session_state.messages
                 ]
@@ -90,6 +91,7 @@ if prompt := st.chat_input("What is up?"):
                 messages=messages,
                 stream=True,
             )
+            print("@stream", str(stream))
             response = st.write_stream(stream)
         except RateLimitError as e:
             st.write("RateLimitError. Error code: 429"+ "\n You assigned rate limit " + str(e.rate_limit) + "\n" + str(e))
@@ -99,6 +101,7 @@ if prompt := st.chat_input("What is up?"):
     
     with st.sidebar:
         st.header("Document text")
+        st.markdown(st.session_state["document"])
         text = st.text_area(
             label="xdxdlol",
             key="document",
