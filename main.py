@@ -64,6 +64,8 @@ if prompt := st.chat_input("What is up?"):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
+    st.session_state.messages = st.session_state.messages[-2:]
+
     with st.chat_message("user"):
         st.markdown(prompt)
 
