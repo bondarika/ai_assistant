@@ -40,7 +40,7 @@ if "openai_model" not in st.session_state:
     st.session_state["openai_model"] = "gpt-4o-2024-05-13"
 
 if "text" not in st.session_state:
-    st.session_state["text"] = "Empty text"
+    st.session_state["document"] = "Empty text"
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -92,14 +92,14 @@ if prompt := st.chat_input("What is up?"):
         except RateLimitError as e:
             st.write("RateLimitError. Error code: 429"+ "\n You assigned rate limit " + str(e.rate_limit) + "\n" + str(e))
 
-    st.session_state["text"] = extract_plaintext(response)
+    st.session_state["document"] = extract_plaintext(response)
     st.session_state.messages.append({"role": "assistant", "content": response}) 
     
     with st.sidebar:
         st.header("Document text")
         text = st.text_area(
             label="xdxdlol",
-            key="text",
+            key="document",
             height=550,
             label_visibility='hidden'
         )
