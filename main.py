@@ -69,7 +69,6 @@ if prompt := st.chat_input("What is up?"):
 
     messages = [
                 {"role": "system", "content": combined_content},
-                {"role": "system", "content": 'Текущий текст: ' + st.session_state["text"]},
                 *[
                     {"role": message["role"], "content": message["content"]} for message in st.session_state.messages
                 ]
