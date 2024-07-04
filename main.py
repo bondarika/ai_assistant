@@ -83,14 +83,12 @@ if prompt := st.chat_input("What is up?"):
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
         print(st.session_state["text"])
-        try: stream = client.chat.completions.create(
+        stream = client.chat.completions.create(
             model=st.session_state["openai_model"],
             temperature=0.5,
             messages=messages,
             stream=True)
-        except RateLimitError as e:
-            print("A 429 status code was received; we should back off a bit.")
-            response = st.write_stream(stream)
+        response = st.write_stream(stream)
     st.session_state["text"] = extract_plaintext(response)
     st.session_state.messages.append({"role": "assistant", "content": response}) 
 
